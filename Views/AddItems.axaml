@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:TestingSystemAvalonia.ViewModels"
+			 x:DataType="vm:MainWindowViewModel"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="TestingSystemAvalonia.AddItems">
+	<UserControl.Styles>
+		<Style Selector="TextBlock.title">
+			<Setter Property="FontSize" Value="25"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
+		</Style>
+		<Style Selector="StackPanel">
+			<Setter Property="Margin" Value="5,10"/>
+		</Style>
+		<Style Selector="Button">
+			<Setter Property="Margin" Value="5,10"/>
+		</Style>
+		<Style Selector="ListBox">
+			<Setter Property="Margin" Value="5,10"/>
+		</Style>
+	</UserControl.Styles>
+	<StackPanel>
+		<TabControl>
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Создать вопрос"/>
+				</TabItem.Header>
+				<TabItem.Content>
+					<StackPanel>
+						<StackPanel>
+							<TextBlock Text="Вопрос"/>
+							<TextBox Text="{Binding AddQVM.NameQuestion}"/>
+						</StackPanel>
+						<StackPanel>
+							<TextBlock Text="Ответ"/>
+							<TextBox Text="{Binding AddQVM.NameAnswer}"/>
+							<StackPanel>
+								<TextBlock Text="Ответы, помеченные галочкой - верные"/>
+								<ListBox ItemsSource="{Binding AddQVM.AnswerCollection}">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<CheckBox Content="{Binding Name}" IsChecked="{Binding IsTrue}"/>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							</StackPanel>
+							
+						</StackPanel>
+						
+						<StackPanel Orientation="Horizontal">
+							<Button Content="Добавить ответ" Command="{Binding AddNewAnswer}"/>
+							<Button Content="Сохранить вопрос" Command="{Binding ToSaveQuestion}"/>
+							<Button Content="Очистить поле ответов" Command="{Binding ClearAnswerCollection}"/>
+						</StackPanel>
+						
+					</StackPanel>
+				</TabItem.Content>
+			</TabItem>
+			
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Создать тест"/>
+				</TabItem.Header>
+				<TabItem.Content>
+					<StackPanel>
+						<StackPanel>
+							<TextBlock Text="Наименование"/>
+							<TextBox Text="{Binding AddTVM.Name}"/>
+						</StackPanel>
+						<StackPanel>
+							<TextBlock Text="Описание"/>
+							<TextBox Text="{Binding AddTVM.Description}" Height="50" TextWrapping="Wrap"/>
+						</StackPanel>
+						<TextBlock Text="Выберите вопросы для теста"/>
+						<ListBox Height="230" ItemsSource="{Binding AddQVM.QuestionCollection}" 
+								 SelectionMode="Multiple,Toggle" SelectedItems="{Binding AddTVM.QuestionSelectedCollection}">						
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Name}"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>							
+						</ListBox>
+						<Button Content="Сохранить" Command="{Binding ToSaveTest}"/>
+					</StackPanel>					
+				</TabItem.Content>				
+			</TabItem>
+
+			<TabItem>
+				<TabItem.Header>
+					<TextBlock Text="Пройти тест"/>
+				</TabItem.Header>
+				<TabItem.Content>
+					<StackPanel>
+						<ComboBox ItemsSource="{Binding PassTest.TestCollection}" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding PassTest.CurrentTest}" Width="300"/>
+						<Grid Margin="10">
+							<ListBox ItemsSource="{Binding PassTest.CurrentTest}">
+								<TextBlock Text="Вопросы"/>
+								<ListBox ItemsSource="{Binding PassTest.QuestionTestCollection}"/>
+							</ListBox>
+						</Grid>
+					</StackPanel>
+				</TabItem.Content>
+			</TabItem>
+		</TabControl>	
+	</StackPanel>
+</UserControl>
