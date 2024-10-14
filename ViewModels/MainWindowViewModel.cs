@@ -32,7 +32,7 @@ namespace TestingSystemAvalonia.ViewModels
         }
         #endregion
 
-        #region Представление модели Добаления теста
+        #region Представление модели Добавления теста
         AddTestViewModel _addTVM = new AddTestViewModel();
 
 
@@ -43,7 +43,7 @@ namespace TestingSystemAvalonia.ViewModels
         }
         #endregion
 
-        #region Представление модели Работа с фалйоми
+        #region Представление модели Работа с файломи
         WorkWithFileViewModel _workWithFile = new WorkWithFileViewModel();
 
 

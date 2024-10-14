@@ -1,17 +1,10 @@
+using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Templates;
-using DynamicData;
-using DynamicData.Binding;
-using ReactiveUI;
 using TestingSystemAvalonia.Models;
 
 namespace TestingSystemAvalonia.ViewModels
@@ -22,7 +15,7 @@ namespace TestingSystemAvalonia.ViewModels
     public class PassTestViewModel : ReactiveObject
     {
         WorkWithFileViewModel wwf = new WorkWithFileViewModel();
-                
+
 
         /// <summary>
         /// Конструктор для инициализации
@@ -140,16 +133,17 @@ namespace TestingSystemAvalonia.ViewModels
         #endregion
 
         #region Выбранный ответ
-        Answers _selectItem;
+        Answers _selectedItem;
 
 
-        public Answers SelectItem
+        public Answers SelectedItem
         {
-            get => _selectItem;
+            get => _selectedItem;
             set
             {
-                this.RaiseAndSetIfChanged(ref _selectItem, value);
-                EditChoiceUser();
+                this.RaiseAndSetIfChanged(ref _selectedItem, value);
+
+                ChoiceUser(AnswerTestCollection);
             }
         }
         #endregion
@@ -167,7 +161,7 @@ namespace TestingSystemAvalonia.ViewModels
 
                 if (CurrentQuestion != null)
                 {
-                    EditChoiceUser();
+                    answerrrrr();
                 }
                 else
                 {
@@ -198,7 +192,7 @@ namespace TestingSystemAvalonia.ViewModels
             set => this.RaiseAndSetIfChanged(ref this._questionTestCollection, value);
         }
         #endregion
-        
+
         #region Список ответов
         ObservableCollection<Answers> _answerTestCollection = new ObservableCollection<Answers>();
 
@@ -210,37 +204,69 @@ namespace TestingSystemAvalonia.ViewModels
         }
         #endregion
 
-        #region Список ответов пользователя
-        ObservableCollection<Answers> _answerUser = new ObservableCollection<Answers>();
-
-
-        public ObservableCollection<Answers> AnswerUser
-        {
-            get => _answerUser;
-            set => this.RaiseAndSetIfChanged(ref _answerUser, value);
-        }
-        #endregion
-
         /// <summary>
         /// Изменение выбора ответов пользователя
         /// </summary>
         /// <param name="AnswerTestCollection">Список всех ответов на вопрос</param>
-        public void ChoiceUser(ObservableCollection<Answers> AnswerTestCollection)
+        public void ChoiceUser(ObservableCollection<Answers> AnswerCollection)
         {
-            foreach (var answer in AnswerTestCollection)
+            foreach (var item in AnswerCollection)
             {
-                if (answer.IsTrue && !(AnswerUser.Contains(answer)))
+                if (item.IdQuestion == CurrentQuestion.Id && item.Id == SelectedItem.Id && !ResultTestUser.AnswerUser.Contains(item))
                 {
-                    AnswerUser.Add(answer);
-                }
+                    ResultTestUser.AnswerUser.Add(item);
 
-                if (!(answer.IsTrue) && AnswerUser.Contains(answer))
-                {
-                    AnswerUser.Remove(answer);
+                    break;
                 }
             }
         }
 
+        bool _isSelect=false;
+        public bool IsSelect
+        {
+            get => _isSelect;
+            set => this.RaiseAndSetIfChanged(ref _isSelect, value);
+        }
+
+        public void answerrrrr()
+        {
+            try
+            {
+                AnswerTestCollection.Clear();
+
+                using (var file = File.OpenText(wwf.pathCollection[2]))
+                {
+                    string sJson;
+
+                    while ((sJson = file.ReadLine()) != null)
+                    {
+                        Answers answer = JsonSerializer.Deserialize<Answers>(sJson);
+
+                        if (answer.IdQuestion == CurrentQuestion.Id)
+                        {
+                            if (ResultTestUser.AnswerUser.Contains(answer))
+                            {
+                                IsSelect = true;
+                                answer.IsTrue = true;
+                            }
+                            else
+                            {
+                                IsSelect = false;
+                                answer.IsTrue = false;
+                            }
+                            AnswerTestCollection.Add(answer);
+                        }
+                    }
+                }
+            }
+            catch
+            (Exception ex)
+            {
+
+            }
+        }
+
+        /*
         /// <summary>
         /// Изменение ответов на вопрос
         /// </summary>
@@ -286,6 +312,7 @@ namespace TestingSystemAvalonia.ViewModels
                 //
             }
         }
+        */
 
         /// <summary>
         /// Подсчет правильных баллов в тесте
@@ -327,12 +354,12 @@ namespace TestingSystemAvalonia.ViewModels
         public void ShowResult()
         {
             AllPoint = CountPointInTest(CurrentTest.Id);
-            UserPoint = CountPointInUser(AnswerUser);
+            UserPoint = CountPointInUser(ResultTestUser.AnswerUser);
             IsVisibleTest = false;
             BtnText = "Начать заново";
             Result = "Набрано " + UserPoint + " верных баллов из " + AllPoint;
 
-            AnswerUser.Clear();
+            ResultTestUser.AnswerUser.Clear();
         }
 
         /// <summary>
