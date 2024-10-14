@@ -4,12 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:TestingSystemAvalonia.ViewModels"
 			 x:DataType="vm:MainWindowViewModel"
-			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500" 
              x:Class="TestingSystemAvalonia.AddItems">
 	<UserControl.Styles>
 		<Style Selector="TextBlock.title">
 			<Setter Property="FontSize" Value="25"/>
-			<Setter Property="HorizontalAlignment" Value="Left"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="5,15"/>
 		</Style>
 		<Style Selector="StackPanel">
 			<Setter Property="Margin" Value="5,10"/>
@@ -29,6 +30,7 @@
 				</TabItem.Header>
 				<TabItem.Content>
 					<StackPanel>
+						<TextBlock Text="Поле Вопрос должно быть заполнено*"/>
 						<StackPanel>
 							<TextBlock Text="Вопрос"/>
 							<TextBox Text="{Binding AddQVM.NameQuestion}"/>
@@ -39,22 +41,22 @@
 							<StackPanel>
 								<TextBlock Text="Ответы, помеченные галочкой - верные"/>
 								<ListBox ItemsSource="{Binding AddQVM.AnswerCollection}">
-								<ListBox.ItemTemplate>
-									<DataTemplate>
-										<CheckBox Content="{Binding Name}" IsChecked="{Binding IsTrue}"/>
-									</DataTemplate>
-								</ListBox.ItemTemplate>
-							</ListBox>
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<CheckBox Content="{Binding Name}" IsChecked="{Binding IsTrue}"/>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
 							</StackPanel>
-							
+
 						</StackPanel>
-						
+
 						<StackPanel Orientation="Horizontal">
 							<Button Content="Добавить ответ" Command="{Binding AddNewAnswer}"/>
 							<Button Content="Сохранить вопрос" Command="{Binding ToSaveQuestion}"/>
 							<Button Content="Очистить поле ответов" Command="{Binding ClearAnswerCollection}"/>
 						</StackPanel>
-						
+
 					</StackPanel>
 				</TabItem.Content>
 			</TabItem>
@@ -65,6 +67,10 @@
 				</TabItem.Header>
 				<TabItem.Content>
 					<StackPanel>
+						
+					<ScrollViewer Height="500">
+					<StackPanel>
+						<TextBlock Text="Поля Наименование и Описание должны быть заполнены*"/>
 						<StackPanel>
 							<TextBlock Text="Наименование"/>
 							<TextBox Text="{Binding AddTVM.Name}"/>
@@ -74,35 +80,65 @@
 							<TextBox Text="{Binding AddTVM.Description}" Height="50" TextWrapping="Wrap"/>
 						</StackPanel>
 						<TextBlock Text="Выберите вопросы для теста"/>
-						<ListBox Height="230" ItemsSource="{Binding AddQVM.QuestionCollection}" 
-								 SelectionMode="Multiple,Toggle" SelectedItems="{Binding AddTVM.QuestionSelectedCollection}">						
+						<ListBox Height="230" ItemsSource="{Binding AddQVM.QuestionCollection}"
+								 SelectionMode="Multiple,Toggle" SelectedItems="{Binding AddTVM.QuestionSelectedCollection}">
 							<ListBox.ItemTemplate>
 								<DataTemplate>
 									<TextBlock Text="{Binding Name}"/>
 								</DataTemplate>
-							</ListBox.ItemTemplate>							
-						</ListBox>
-						<Button Content="Сохранить" Command="{Binding ToSaveTest}"/>
-					</StackPanel>					
-				</TabItem.Content>				
+							</ListBox.ItemTemplate>
+						</ListBox>						
+					</StackPanel>
+					</ScrollViewer>
+					<Button Content="Сохранить" Command="{Binding ToSaveTest}"/>
+					</StackPanel>
+				</TabItem.Content>
 			</TabItem>
-
+							
 			<TabItem>
 				<TabItem.Header>
 					<TextBlock Text="Пройти тест"/>
 				</TabItem.Header>
 				<TabItem.Content>
 					<StackPanel>
-						<ComboBox ItemsSource="{Binding PassTest.TestCollection}" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding PassTest.CurrentTest}" Width="300"/>
-						<Grid Margin="10">
-							<ListBox ItemsSource="{Binding PassTest.CurrentTest}">
-								<TextBlock Text="Вопросы"/>
-								<ListBox ItemsSource="{Binding PassTest.QuestionTestCollection}"/>
-							</ListBox>
-						</Grid>
+					<ScrollViewer Height="500">
+					<StackPanel>						
+						<ComboBox ItemsSource="{Binding PassTest.TestCollection}" DisplayMemberBinding="{Binding Name}" 
+								  SelectedItem="{Binding PassTest.CurrentTest}" Width="300" IsVisible="{Binding PassTest.IsVisibleTest}"/>						
+						<StackPanel IsVisible="{Binding PassTest.IsVisibleTest}">
+							<TextBlock Text="{Binding PassTest.CurrentTest.Name}"  Classes="title"/>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition/>
+									<ColumnDefinition/>
+								</Grid.ColumnDefinitions>							
+								
+								<StackPanel Grid.Column="0">
+									<TextBlock Text="Вопросы"/>
+									<ListBox ItemsSource="{Binding PassTest.QuestionTestCollection}" SelectedIndex="0"
+											 SelectedItem="{Binding PassTest.CurrentQuestion}" DisplayMemberBinding="{Binding Name}"/>
+								</StackPanel>
+								<StackPanel Grid.Column="1">
+									<TextBlock Text="Ответы"/>
+									<ListBox ItemsSource="{Binding PassTest.AnswerTestCollection}" SelectedItem="{Binding PassTest.SelectIndex}">
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<CheckBox Content="{Binding Name}" IsChecked="{Binding IsTrue}"/>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+								</StackPanel>
+							</Grid>							
+						</StackPanel>
+					</StackPanel>
+					</ScrollViewer>
+						<StackPanel>
+							<TextBlock Text="{Binding PassTest.Result}"  Classes="title"/>
+							<Button Content="{Binding PassTest.BtnText}" Command="{Binding SaveChoceUser}"/>
+						</StackPanel>						
 					</StackPanel>
 				</TabItem.Content>
 			</TabItem>
-		</TabControl>	
+		</TabControl>
 	</StackPanel>
 </UserControl>

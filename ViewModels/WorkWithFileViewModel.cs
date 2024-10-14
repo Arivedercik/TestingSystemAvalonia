@@ -13,22 +13,30 @@ using Tmds.DBus.Protocol;
 
 namespace TestingSystemAvalonia.ViewModels
 {
+    /// <summary>
+    /// Работа с фалами Json
+    /// </summary>
 	public class WorkWithFileViewModel : ReactiveObject
-	{
+    {
         const string PathJsonFileTest = "Tests.json";
         const string PathJsonFileQuestions = "Questions.json";
         const string PathJsonFileAnswers = "Answers.json";
-        const string PathJsonFileTypeQuestion = "TypeQuestion.json";
 
-        public List<string> pathCollection = new List<string>() 
-        { 
-            PathJsonFileTest, 
-            PathJsonFileQuestions, 
-            PathJsonFileAnswers, 
-            PathJsonFileTypeQuestion 
+        /// <summary>
+        /// Список всех файлов
+        /// </summary>
+        public ObservableCollection<string> pathCollection = new ObservableCollection<string>()
+        {
+            PathJsonFileTest,
+            PathJsonFileQuestions,
+            PathJsonFileAnswers
         };
+
+        /// <summary>
+        /// Конструктор для создания файлов
+        /// </summary>
         public WorkWithFileViewModel()
-		{
+        {
             try
             {
                 if (!File.Exists(PathJsonFileTest))
@@ -41,14 +49,20 @@ namespace TestingSystemAvalonia.ViewModels
             }
             catch
             {
-               
+                //
             }
         }
 
+        /// <summary>
+        /// Добавление теста в файл
+        /// </summary>
+        /// <param name="Name">Наименование теста</param>
+        /// <param name="Description">Описание теста</param>
+        /// <param name="QuestionCollection">Список вопросов теста</param>
         public void AddTest(string Name, string Description, ObservableCollection<Questions> QuestionCollection)
         {
-            int count = File.ReadAllLines(pathCollection[0]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[0]).Length;
-           
+            int count = File.ReadAllLines(pathCollection[0]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[0]).Length + 1;
+
             using (var file = File.AppendText(pathCollection[0]))
             {
                 Tests newTest = new Tests()
@@ -56,86 +70,72 @@ namespace TestingSystemAvalonia.ViewModels
                     Id = count,
                     Name = Name,
                     Description = Description,
-                    questionCollection = QuestionCollection
+                    QuestionCollection = QuestionCollection
                 };
 
                 file.WriteLine(JsonSerializer.Serialize(newTest));
             }
         }
 
+        /// <summary>
+        /// Добавление вопроса в файл
+        /// </summary>
+        /// <param name="Name">Тело вопроса</param>
         public void AddQuestion(string Name)
         {
-            int count = File.ReadAllLines(pathCollection[1]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[1]).Length;
+            int count = File.ReadAllLines(pathCollection[1]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[1]).Length + 1;
 
             using (var file = File.AppendText(pathCollection[1]))
             {
-
                 Questions newQ = new Questions()
                 {
-                    ID = count,
+                    Id = count,
                     Name = Name
                 };
+
                 file.WriteLine(JsonSerializer.Serialize(newQ));
             }
         }
 
-        public void AddAnswer(ObservableCollection<Answer> answerColllection)
+        /// <summary>
+        /// Добавление ответов в файл
+        /// </summary>
+        /// <param name="AnswerCollection">Список ответов</param>
+        public void AddAnswer(ObservableCollection<Answers> AnswerCollection)
         {
-            int countAnswer = File.ReadAllLines(pathCollection[2]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[2]).Length;
+            int countAnswer = File.ReadAllLines(pathCollection[2]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[2]).Length + 1;
 
-            int countQuestionn = File.ReadAllLines(pathCollection[1]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[1]).Length;
+            int countQuestionn = File.ReadAllLines(pathCollection[1]).Length == 0 ? 1 : File.ReadAllLines(pathCollection[1]).Length + 1;
 
             using (var file = File.AppendText(pathCollection[2]))
             {
-                for (int i = 0; i < answerColllection.Count; i++)
+                for (int i = 0; i < AnswerCollection.Count; i++)
                 {
-                    Answer newA = new Answer()
+                    Answers newA = new Answers()
                     {
-                        Id = countAnswer+i,
-                        Name = answerColllection[i].Name,
+                        Id = countAnswer + i,
+                        Name = AnswerCollection[i].Name,
                         IdQuestion = countQuestionn,
-                        IsTrue = answerColllection[i].IsTrue
+                        IsTrue = AnswerCollection[i].IsTrue
                     };
+
                     file.WriteLine(JsonSerializer.Serialize(newA));
                 }
             }
         }
 
-        public void EditAnswer(string Name, bool IsTrue)
-        {
-            ObservableCollection<Answer> answerCollection = new ObservableCollection<Answer>();
-
-            using (var file = File.OpenText(pathCollection[2]))
-            {
-                string sJson;
-                while ((sJson = file.ReadLine()) != null)
-                {
-                    answerCollection.Add(JsonSerializer.Deserialize<Answer>(sJson));
-
-                    if(Name == answerCollection[answerCollection.Count-1].Name)
-                    {
-                        answerCollection[answerCollection.Count - 1].IsTrue = IsTrue;
-                    }
-                }
-            }
-
-            File.WriteAllText(pathCollection[2], "");
-
-            using (var file = File.AppendText(pathCollection[2]))
-            {
-                foreach (var item in answerCollection)
-                {
-                    file.WriteLine(JsonSerializer.Serialize(item));
-                }
-            }
-        }
-
+        /// <summary>
+        /// Изъятие тестов из файла
+        /// </summary>
+        /// <returns>Список тестов</returns>
         public ObservableCollection<Tests> SearchTest()
         {
             ObservableCollection<Tests> testCollection = new ObservableCollection<Tests>();
+
             using (var file = File.OpenText(pathCollection[0]))
             {
                 string sJson;
+
                 while ((sJson = file.ReadLine()) != null)
                 {
                     testCollection.Add(JsonSerializer.Deserialize<Tests>(sJson));
@@ -143,6 +143,27 @@ namespace TestingSystemAvalonia.ViewModels
             }
 
             return testCollection;
+        }
+
+        /// <summary>
+        /// Изъятие ответов из файла
+        /// </summary>
+        /// <returns>Список ответов</returns>
+        public ObservableCollection<Answers> SearchAnswer()
+        {
+            ObservableCollection<Answers> answerCollection = new ObservableCollection<Answers>();
+
+            using (var file = File.OpenText(pathCollection[2]))
+            {
+                string sJson;
+
+                while ((sJson = file.ReadLine()) != null)
+                {
+                    answerCollection.Add(JsonSerializer.Deserialize<Answers>(sJson));
+                }
+            }
+
+            return answerCollection;
         }
     }
 }

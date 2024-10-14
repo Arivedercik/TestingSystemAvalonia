@@ -10,70 +10,77 @@ using TestingSystemAvalonia.Models;
 
 namespace TestingSystemAvalonia.ViewModels
 {
+    /// <summary>
+    /// Добавление вопросов
+    /// </summary>
     public class AddQuestionViewModel : ReactiveObject
     {
+        /// <summary>
+        /// Конструктор для инициализации списков
+        /// </summary>
         public AddQuestionViewModel()
         {
             InitQuestionCollection();
         }
 
+        /// <summary>
+        /// Инициализация списка вопросов
+        /// </summary>
         public void InitQuestionCollection()
         {
-            QuestionCollection.Clear();           
-
+            QuestionCollection.Clear();  
             WorkWithFileViewModel wwf = new WorkWithFileViewModel();
+
             using (var file = File.OpenText(wwf.pathCollection[1]))
             {
-
                 string sJson;
+
                 while ((sJson = file.ReadLine()) != null)
                 {
                     QuestionCollection.Add(JsonSerializer.Deserialize<Questions>(sJson));
                 }
             }
-
-            /*
-            using (var file = File.OpenText(wwf.pathCollection[2]))
-            {
-
-                string sJson;
-                while ((sJson = file.ReadLine()) != null)
-                {
-                    AnswerCollection.Add(JsonSerializer.Deserialize<Answer>(sJson));
-                }
-            }
-            */
         }
 
+        #region Поле наименования вопроса
         private string _nameQuestion = "";
-        private string _nameAnswer = "";
-        private ObservableCollection<Questions> _questionCollection = new ObservableCollection<Questions>();
-        private ObservableCollection<Answer> _answerCollection = new ObservableCollection<Answer>();
-        
 
         public string NameQuestion
         {
             get => _nameQuestion;
             set => this.RaiseAndSetIfChanged(ref _nameQuestion, value);
         }
+        #endregion
+
+        #region Поле наименование ответа
+        private string _nameAnswer = "";
 
         public string NameAnswer
         {
             get => _nameAnswer;
             set => this.RaiseAndSetIfChanged(ref _nameAnswer, value);
         }
+        #endregion
+
+        #region Поле списка вопросов
+        private ObservableCollection<Questions> _questionCollection = new ObservableCollection<Questions>();
 
         public ObservableCollection<Questions> QuestionCollection
         {
             get => _questionCollection;
             set => this.RaiseAndSetIfChanged(ref _questionCollection, value);
         }
+        #endregion
 
-        public ObservableCollection<Answer> AnswerCollection
+        #region Поле списка ответов
+        private ObservableCollection<Answers> _answerCollection = new ObservableCollection<Answers>();
+
+
+        public ObservableCollection<Answers> AnswerCollection
         {
             get => _answerCollection;
             set => this.RaiseAndSetIfChanged(ref _answerCollection, value);
-        }
-        
+        }        
+        #endregion
     }
 }

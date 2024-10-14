@@ -8,23 +8,19 @@ using System.Threading.Tasks;
 
 namespace TestingSystemAvalonia.Models
 {
+    /// <summary>
+    /// Вопросы
+    /// </summary>
     public class Questions
     {
         /// <summary>
         /// Идентификатор вопроса
         /// </summary>
-        public int ID { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Вопрос
         /// </summary>
-        public string Name { get; set; }    
-        
-        /*
-        /// <summary>
-        /// Список ответов
-        /// </summary>
-        public ObservableCollection<Answer> AnswerCollection = new ObservableCollection<Answer>();
-        */
+        public string Name { get; set; }  
     }
 }

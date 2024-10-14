@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Avalonia.Platform.Storage;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,28 +8,28 @@ using System.Threading.Tasks;
 namespace TestingSystemAvalonia.Models
 {
     /// <summary>
-    /// Тесты
+    /// Ответы
     /// </summary>
-    public class Tests
+    public class Answers
     {
         /// <summary>
-        /// Идентификатор теста
+        /// Идентификатор ответа
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Наименование теста
+        /// Тело ответа
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Описание теста
+        /// Идентификатор вопроса к ответу
         /// </summary>
-        public string Description { get; set; }
+        public int IdQuestion { get; set; }
 
         /// <summary>
-        /// Список вопросов
+        /// Состояние ответа: верно\неверно
         /// </summary>
-        public ObservableCollection<Questions> QuestionCollection { get; set; }
+        public bool IsTrue {  get; set; }
     }
 }
