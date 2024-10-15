@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using ReactiveUI;
 using TestingSystemAvalonia.Models;
+using TestingSystemAvalonia.Services;
 
 namespace TestingSystemAvalonia.ViewModels
 {
@@ -15,6 +16,14 @@ namespace TestingSystemAvalonia.ViewModels
     /// </summary>
     public class AddQuestionViewModel : ReactiveObject
     {
+        private string _nameQuestion = "";
+        private string _nameAnswer = "";
+
+        private ObservableCollection<Question> _questionCollection = new ObservableCollection<Question>();
+
+        private ObservableCollection<Answer> _answerCollection = new ObservableCollection<Answer>();
+
+
         /// <summary>
         /// Конструктор для инициализации списков
         /// </summary>
@@ -23,64 +32,37 @@ namespace TestingSystemAvalonia.ViewModels
             InitQuestionCollection();
         }
 
-        /// <summary>
-        /// Инициализация списка вопросов
-        /// </summary>
-        public void InitQuestionCollection()
-        {
-            QuestionCollection.Clear();  
-            WorkWithFileViewModel wwf = new WorkWithFileViewModel();
-
-            using (var file = File.OpenText(wwf.pathCollection[1]))
-            {
-                string sJson;
-
-                while ((sJson = file.ReadLine()) != null)
-                {
-                    QuestionCollection.Add(JsonSerializer.Deserialize<Questions>(sJson));
-                }
-            }
-        }
-
-        #region Поле наименования вопроса
-        private string _nameQuestion = "";
-
         public string NameQuestion
         {
             get => _nameQuestion;
             set => this.RaiseAndSetIfChanged(ref _nameQuestion, value);
         }
-        #endregion
-
-        #region Поле наименование ответа
-        private string _nameAnswer = "";
 
         public string NameAnswer
         {
             get => _nameAnswer;
             set => this.RaiseAndSetIfChanged(ref _nameAnswer, value);
         }
-        #endregion
 
-        #region Поле списка вопросов
-        private ObservableCollection<Questions> _questionCollection = new ObservableCollection<Questions>();
-
-        public ObservableCollection<Questions> QuestionCollection
+        public ObservableCollection<Question> QuestionCollection
         {
             get => _questionCollection;
             set => this.RaiseAndSetIfChanged(ref _questionCollection, value);
         }
-        #endregion
 
-        #region Поле списка ответов
-        private ObservableCollection<Answers> _answerCollection = new ObservableCollection<Answers>();
-
-
-        public ObservableCollection<Answers> AnswerCollection
+        public ObservableCollection<Answer> AnswerCollection
         {
             get => _answerCollection;
             set => this.RaiseAndSetIfChanged(ref _answerCollection, value);
-        }        
-        #endregion
+        }
+
+        /// <summary>
+        /// Инициализация списка вопросов
+        /// </summary>
+        public void InitQuestionCollection()
+        {
+            QuestionCollection.Clear();
+            QuestionCollection = new ObservableCollection<Question>(new QuestionRepo().GetAllQuestion());
+        }
     }
 }

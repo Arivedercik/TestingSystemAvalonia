@@ -1,11 +1,17 @@
+using Avalonia.Controls;
+using Avalonia.Controls.Selection;
+using DynamicData;
+using DynamicData.Binding;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json;
 using TestingSystemAvalonia.Models;
+using TestingSystemAvalonia.Services;
 
 namespace TestingSystemAvalonia.ViewModels
 {
@@ -14,7 +20,25 @@ namespace TestingSystemAvalonia.ViewModels
     /// </summary>
     public class PassTestViewModel : ReactiveObject
     {
-        WorkWithFileViewModel wwf = new WorkWithFileViewModel();
+        private int _allpoint;
+        private int _userPoint;
+
+        private string _result;
+        private string _btnText = "Проверить результат";
+
+        private bool _isVisibleTest = true;
+        private bool _isChangingQuestion = false;
+
+        private Test _currentTest;
+
+        private Question _currentQuest;
+
+        private ObservableCollection<Test> _testCollection = new ObservableCollection<Test>();
+
+        private ObservableCollection<Question> _questionTestCollection = new ObservableCollection<Question>();
+
+        private ObservableCollection<Answer> _answerTestCollection = new ObservableCollection<Answer>();
+        private ObservableCollection<Answer> _selectedItems = new ObservableCollection<Answer>();
 
 
         /// <summary>
@@ -23,76 +47,40 @@ namespace TestingSystemAvalonia.ViewModels
         public PassTestViewModel()
         {
             InitTest();
+            SelectedItems.CollectionChanged += SelectedItems_CollectionChanged;
         }
-
-        /// <summary>
-        /// Инициализация списка тестов
-        /// </summary>
-        public void InitTest()
-        {
-            TestCollection = wwf.SearchTest();
-        }
-
-        #region Поле баллов теста
-        int _allpoint;
-
 
         public int AllPoint
         {
             get => _allpoint;
             set => this.RaiseAndSetIfChanged(ref _allpoint, value);
         }
-        #endregion
-
-        #region Поле набранных пользователем баллов
-        int _userPoint;
-
 
         public int UserPoint
         {
             get => _userPoint;
             set => this.RaiseAndSetIfChanged(ref _userPoint, value);
         }
-        #endregion
-
-        #region Поле вывода результата теста
-        string _result;
-
 
         public string Result
         {
             get => _result;
             set => this.RaiseAndSetIfChanged(ref this._result, value);
         }
-        #endregion
-
-        #region Поле изменения текста кнопки
-        string _btnText = "Проверить результат";
-
 
         public string BtnText
         {
             get => _btnText;
             set => this.RaiseAndSetIfChanged(ref _btnText, value);
         }
-        #endregion
-
-        #region Поле видимости
-        bool _isVisibleTest = true;
-
 
         public bool IsVisibleTest
         {
             get => _isVisibleTest;
             set => this.RaiseAndSetIfChanged(ref _isVisibleTest, value);
         }
-        #endregion
 
-        #region Выбранный тест
-        Tests _currentTest;
-
-
-        public Tests CurrentTest
+        public Test CurrentTest
         {
             get => _currentTest;
             set
@@ -102,234 +90,141 @@ namespace TestingSystemAvalonia.ViewModels
                 {
                     QuestionTestCollection.Clear();
 
-                    try
-                    {
-                        using (var file = File.OpenText(wwf.pathCollection[0]))
-                        {
-                            string sJson;
-                            while ((sJson = file.ReadLine()) != null)
-                            {
-                                Tests test = JsonSerializer.Deserialize<Tests>(sJson);
-
-                                if (test.Id == CurrentTest.Id)
-                                {
-                                    foreach (var item in CurrentTest.QuestionCollection)
-                                    {
-                                        QuestionTestCollection.Add(item);
-                                    }
-
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        //
-                    }
+                    QuestionTestCollection.AddRange(value.QuestionCollection);
                 }
             }
         }
-        #endregion
 
-        #region Выбранный ответ
-        Answers _selectedItem;
-
-
-        public Answers SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _selectedItem, value);
-
-                ChoiceUser(AnswerTestCollection);
-            }
-        }
-        #endregion
-
-        #region Выбранный вопрос
-        Questions _currentQuest;
-
-
-        public Questions CurrentQuestion
+        public Question CurrentQuestion
         {
             get => _currentQuest;
             set
             {
+                _isChangingQuestion = true;
                 this.RaiseAndSetIfChanged(ref _currentQuest, value);
 
                 if (CurrentQuestion != null)
                 {
-                    answerrrrr();
+                    RememberSelectedItemInChoiceUser();
                 }
                 else
                 {
                     AnswerTestCollection.Clear();
                 }
+                _isChangingQuestion = false;
             }
         }
-        #endregion
 
-        #region Список тестов
-        ObservableCollection<Tests> _testCollection = new ObservableCollection<Tests>();
-
-
-        public ObservableCollection<Tests> TestCollection
+        public ObservableCollection<Test> TestCollection
         {
             get => _testCollection;
             set => this.RaiseAndSetIfChanged(ref this._testCollection, value);
         }
-        #endregion
 
-        #region Список вопросов
-        ObservableCollection<Questions> _questionTestCollection = new ObservableCollection<Questions>();
-
-
-        public ObservableCollection<Questions> QuestionTestCollection
+        public ObservableCollection<Question> QuestionTestCollection
         {
             get => _questionTestCollection;
             set => this.RaiseAndSetIfChanged(ref this._questionTestCollection, value);
         }
-        #endregion
 
-        #region Список ответов
-        ObservableCollection<Answers> _answerTestCollection = new ObservableCollection<Answers>();
-
-
-        public ObservableCollection<Answers> AnswerTestCollection
+        public ObservableCollection<Answer> AnswerTestCollection
         {
             get => _answerTestCollection;
             set => this.RaiseAndSetIfChanged(ref _answerTestCollection, value);
         }
-        #endregion
+
+        public ObservableCollection<Answer> SelectedItems
+        {
+            get
+            {
+                return _selectedItems;
+            }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedItems, value);
+                SelectedItems.CollectionChanged += SelectedItems_CollectionChanged;
+            }
+        }
+
+        /// <summary>
+        /// Событие запоминания выбранных ответов
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SelectedItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            SelectionAnswerUser();
+        }
+
+
+        /// <summary>
+        /// Инициализация списка тестов
+        /// </summary>
+        public void InitTest()
+        {
+            TestCollection = new ObservableCollection<Test>(new TestRepo().GetAllTests());
+        }
 
         /// <summary>
         /// Изменение выбора ответов пользователя
         /// </summary>
         /// <param name="AnswerTestCollection">Список всех ответов на вопрос</param>
-        public void ChoiceUser(ObservableCollection<Answers> AnswerCollection)
+        public void SelectionAnswerUser()
         {
-            foreach (var item in AnswerCollection)
-            {
-                if (item.IdQuestion == CurrentQuestion.Id && item.Id == SelectedItem.Id && !ResultTestUser.AnswerUser.Contains(item))
-                {
-                    ResultTestUser.AnswerUser.Add(item);
+            if (CurrentQuestion is null)
+                return;
 
-                    break;
-                }
+            ResultTestUser.AnswearsOnQuestions.TryAdd(CurrentQuestion, []);
+
+            if (!_isChangingQuestion)
+            {
+                ResultTestUser.AnswearsOnQuestions[CurrentQuestion] = SelectedItems.ToList();
             }
         }
 
-        bool _isSelect=false;
-        public bool IsSelect
-        {
-            get => _isSelect;
-            set => this.RaiseAndSetIfChanged(ref _isSelect, value);
-        }
-
-        public void answerrrrr()
-        {
-            try
-            {
-                AnswerTestCollection.Clear();
-
-                using (var file = File.OpenText(wwf.pathCollection[2]))
-                {
-                    string sJson;
-
-                    while ((sJson = file.ReadLine()) != null)
-                    {
-                        Answers answer = JsonSerializer.Deserialize<Answers>(sJson);
-
-                        if (answer.IdQuestion == CurrentQuestion.Id)
-                        {
-                            if (ResultTestUser.AnswerUser.Contains(answer))
-                            {
-                                IsSelect = true;
-                                answer.IsTrue = true;
-                            }
-                            else
-                            {
-                                IsSelect = false;
-                                answer.IsTrue = false;
-                            }
-                            AnswerTestCollection.Add(answer);
-                        }
-                    }
-                }
-            }
-            catch
-            (Exception ex)
-            {
-
-            }
-        }
-
-        /*
         /// <summary>
-        /// Изменение ответов на вопрос
+        /// Вывод ответов на вопрос с запомненными вариантами
         /// </summary>
-        public void EditChoiceUser()
+        /// <exception cref="Exception">Ошибка запоминания</exception>
+        public void RememberSelectedItemInChoiceUser()
         {
             try
             {
-
-                if (AnswerTestCollection.Count > 0)
-                {
-                    ChoiceUser(AnswerTestCollection);
-                }
-
                 AnswerTestCollection.Clear();
 
-                using (var file = File.OpenText(wwf.pathCollection[2]))
+                Answer[] answers = new AnswerRepo().GetAllAnswersOnQuestion(CurrentQuestion.Id);
+
+                foreach (var answer in answers)
+                    AnswerTestCollection.Add(answer);
+
+                if (ResultTestUser.AnswearsOnQuestions.TryGetValue(CurrentQuestion, out List<Answer>? value))
                 {
-                    string sJson;
-
-                    while ((sJson = file.ReadLine()) != null)
+                    foreach (var answer in value)
                     {
-                        Answers answer = JsonSerializer.Deserialize<Answers>(sJson);
-
-                        if (answer.IdQuestion == CurrentQuestion.Id)
-                        {
-
-                            if (AnswerUser.Contains(answer) == false)
-                            {
-                                answer.IsTrue = false;
-                            }
-                            else if (AnswerUser.Contains(answer) && AnswerUser[AnswerUser.IndexOf(answer)].IsTrue == false)
-                            {
-                                answer.IsTrue = false;
-                            }
-
-                            AnswerTestCollection.Add(answer);
-                        }
+                        SelectedItems.Add(answer);
                     }
                 }
             }
             catch
             {
-                //
+                throw new Exception();
             }
         }
-        */
 
         /// <summary>
         /// Подсчет правильных баллов в тесте
         /// </summary>
-        /// <param name="IdTest">Идентификатор теста</param>
+        /// <param name="idTest">Идентификатор теста</param>
         /// <returns></returns>
-        public int CountPointInTest(int IdTest)
+        public int CountPointInTest(int idTest)
         {
             int countPoint = 0;
 
-            Tests test = wwf.SearchTest().FirstOrDefault(x => x.Id == CurrentTest.Id);
-            ObservableCollection<Questions> questions = test.QuestionCollection;
-            ObservableCollection<Answers> answer = wwf.SearchAnswer();
+            ObservableCollection<Question> questions = new ObservableCollection<Question>(new TestRepo().GetTest(CurrentTest.Id).QuestionCollection);
 
             foreach (var item in questions)
             {
-                countPoint += answer.Where(x => x.IdQuestion == item.Id && x.IsTrue == true).Count();
+                countPoint += new AnswerRepo().GetAllAnswers().Where(x => x.IdQuestion == item.Id && x.IsTrue == true).Count();
             }
 
             return countPoint;
@@ -338,28 +233,30 @@ namespace TestingSystemAvalonia.ViewModels
         /// <summary>
         /// Подсчет правильных баллов пользователя
         /// </summary>
-        /// <param name="AnswerUser">Список ответов пользователя</param>
-        /// <returns></returns>
-        public int CountPointInUser(ObservableCollection<Answers> AnswerUser)
+        /// <returns>Количество баллов пользователя</returns>
+        public int CountPointInUser()
         {
             int countPoint = 0;
-            countPoint += AnswerUser.Where(x => x.IsTrue == true).Count();
+
+            foreach (var item in ResultTestUser.AnswearsOnQuestions)
+            {
+                countPoint += item.Value.Where(x => x.IsTrue).Count();
+            }
 
             return countPoint;
         }
 
         /// <summary>
-        /// Просмотр результата
+        /// Вывод результата теста
         /// </summary>
         public void ShowResult()
         {
             AllPoint = CountPointInTest(CurrentTest.Id);
-            UserPoint = CountPointInUser(ResultTestUser.AnswerUser);
+            UserPoint = ResultTestUser.AnswearsOnQuestions.Count == 0 ? 0 : CountPointInUser();
             IsVisibleTest = false;
             BtnText = "Начать заново";
             Result = "Набрано " + UserPoint + " верных баллов из " + AllPoint;
-
-            ResultTestUser.AnswerUser.Clear();
+            ResultTestUser.AnswearsOnQuestions.Clear();
         }
 
         /// <summary>
@@ -368,7 +265,7 @@ namespace TestingSystemAvalonia.ViewModels
         public void StartOver()
         {
             InitTest();
-            CurrentTest = wwf.SearchTest().FirstOrDefault(x => x.Id == 1);
+            CurrentTest = new TestRepo().GetTest(1);
             UserPoint = 0;
             IsVisibleTest = true;
             BtnText = "Проверить результат";

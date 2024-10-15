@@ -10,7 +10,7 @@ namespace TestingSystemAvalonia.Models
     /// <summary>
     /// Ответы
     /// </summary>
-    public class Answers
+    public class Answer
     {
         /// <summary>
         /// Идентификатор ответа
@@ -31,5 +31,13 @@ namespace TestingSystemAvalonia.Models
         /// Состояние ответа: верно\неверно
         /// </summary>
         public bool IsTrue {  get; set; }
+
+
+        public override bool Equals(object? obj)
+        {
+            if(obj is Answer objC)
+                return objC.Id == Id && objC.Name == Name && objC.IdQuestion == IdQuestion && objC.IsTrue == IsTrue;
+            return base.Equals(obj);
+        }
     }
 }

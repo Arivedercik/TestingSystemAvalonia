@@ -30,7 +30,7 @@
 				</TabItem.Header>
 				<TabItem.Content>
 					<StackPanel>
-						<TextBlock Text="Поле Вопрос должно быть заполнено*"/>
+						<TextBlock Text="Поле Вопрос должно быть заполнено*"/>						
 						<StackPanel>
 							<TextBlock Text="Вопрос"/>
 							<TextBox Text="{Binding AddQVM.NameQuestion}"/>
@@ -70,7 +70,7 @@
 
 						<ScrollViewer Height="500">
 							<StackPanel>
-								<TextBlock Text="Поля Наименование и Описание должны быть заполнены*"/>
+								<TextBlock Text="Поле Наименование должно быть заполнено*"/>
 								<StackPanel>
 									<TextBlock Text="Наименование"/>
 									<TextBox Text="{Binding AddTVM.Name}"/>
@@ -121,7 +121,7 @@
 										<StackPanel Grid.Column="1">
 											<TextBlock Text="Ответы"/>
 											<ListBox ItemsSource="{Binding PassTest.AnswerTestCollection}" SelectionMode="Multiple,Toggle"
-													 SelectedItem="{Binding PassTest.SelectedItem}">
+                               SelectedItems="{Binding PassTest.SelectedItems}">
 												<ListBox.ItemTemplate>
 													<DataTemplate>
 														<TextBlock Text="{Binding Name}"/>
@@ -135,7 +135,7 @@
 						</ScrollViewer>
 						<StackPanel>
 							<TextBlock Text="{Binding PassTest.Result}"  Classes="title"/>
-							<Button Content="{Binding PassTest.BtnText}" Command="{Binding SaveChoceUser}"/>
+							<Button Content="{Binding PassTest.BtnText}" Command="{Binding SaveChoiceUser}"/>
 						</StackPanel>
 					</StackPanel>
 				</TabItem.Content>

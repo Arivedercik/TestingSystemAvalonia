@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 
 namespace TestingSystemAvalonia.Models
 {
+    /// <summary>
+    /// Результат прохождения тестирования
+    /// </summary>
     public static class ResultTestUser
     {
-        private static ObservableCollection<Answers> _answerUser = new ObservableCollection<Answers>();
+        private static Dictionary<Question, List<Answer>> _answearsOnQuestions = new Dictionary<Question, List<Answer>>();
 
-        public static ObservableCollection<Answers> AnswerUser
+        public static Dictionary<Question, List<Answer>> AnswearsOnQuestions
         {
-            get => _answerUser;
-            set => _answerUser = value;
+            get => _answearsOnQuestions;
         }
     }
 }

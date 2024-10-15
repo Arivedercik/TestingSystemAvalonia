@@ -11,7 +11,7 @@ namespace TestingSystemAvalonia.Models
     /// <summary>
     /// Вопросы
     /// </summary>
-    public class Questions
+    public class Question
     {
         /// <summary>
         /// Идентификатор вопроса

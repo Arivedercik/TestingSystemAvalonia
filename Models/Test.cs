@@ -10,7 +10,7 @@ namespace TestingSystemAvalonia.Models
     /// <summary>
     /// Тесты
     /// </summary>
-    public class Tests
+    public class Test
     {
         /// <summary>
         /// Идентификатор теста
@@ -28,8 +28,8 @@ namespace TestingSystemAvalonia.Models
         public string Description { get; set; }
 
         /// <summary>
-        /// Список вопросов
+        /// Список вопросов к тесту
         /// </summary>
-        public ObservableCollection<Questions> QuestionCollection { get; set; }
+        public ObservableCollection<Question> QuestionCollection { get; set; }
     }
 }
